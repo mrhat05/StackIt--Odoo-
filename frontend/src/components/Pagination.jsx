@@ -1,4 +1,4 @@
-import { Button } from '@shadcn/ui/button';
+import { Button } from '@/components/ui/button';
 
 export default function Pagination({ page, totalPages, onPageChange }) {
   if (totalPages <= 1) return null;
