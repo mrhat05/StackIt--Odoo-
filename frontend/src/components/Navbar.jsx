@@ -68,7 +68,7 @@ export default function Navbar() {
       {/* Logo */}
       <div className="flex items-center gap-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/src/assets/logo.jpg" alt="StackIt Logo" className="w-10 h-10 drop-shadow-lg" />
+          <img src="/src/assets/logo.jpg" alt="StackIt Logo" className="w-10 h- drop-shadow-lg" />
           <span className="font-bold text-xl tracking-tight drop-shadow">StackIt</span>
         </Link>
       </div>
