@@ -1,5 +1,6 @@
 import Question from '../models/Question.js';
 import Answer from '../models/Answer.js';
+import { createQuestionWithImages, updateQuestionWithImages, cleanupImages } from './richContentController.js';
 
 export async function getQuestions(req, res) {
   try {
@@ -35,38 +36,13 @@ export async function getQuestionById(req, res) {
 }
 
 export async function createQuestion(req, res) {
-  try {
-    const { title, description, tags } = req.body;
-    const question = new Question({
-      title,
-      description,
-      tags,
-      user: req.user.userId,
-      answers: [],
-    });
-    await question.save();
-    res.status(201).json(question);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
+  // Use the new image processing function
+  return createQuestionWithImages(req, res);
 }
 
 export async function updateQuestion(req, res) {
-  try {
-    const question = await Question.findById(req.params.id);
-    if (!question) return res.status(404).json({ message: 'Question not found' });
-    if (question.user.toString() !== req.user.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Unauthorized' });
-    }
-    const { title, description, tags } = req.body;
-    question.title = title || question.title;
-    question.description = description || question.description;
-    question.tags = tags || question.tags;
-    await question.save();
-    res.json(question);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
+  // Use the new image processing function
+  return updateQuestionWithImages(req, res);
 }
 
 export async function deleteQuestion(req, res) {
@@ -76,6 +52,16 @@ export async function deleteQuestion(req, res) {
     if (question.user.toString() !== req.user.userId && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Unauthorized' });
     }
+    
+    // Clean up images from Cloudinary
+    await cleanupImages(question.images);
+    
+    // Delete all answers and their images
+    const answers = await Answer.find({ question: question._id });
+    for (const answer of answers) {
+      await cleanupImages(answer.images);
+    }
+    
     await Answer.deleteMany({ question: question._id });
     await question.deleteOne();
     res.json({ message: 'Question deleted' });
