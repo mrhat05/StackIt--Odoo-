@@ -117,7 +117,7 @@ npm run dev
 ```
 4. Visit http://localhost:5173 in your browser.
 
-# Member details
+5. Member details
 
 1. Nainsi Raja - nainsiraja6022@gmail.com
 2. Vidhi Mittal - vidhi42004@gmail.com
