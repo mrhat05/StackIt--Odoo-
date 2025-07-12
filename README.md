@@ -20,14 +20,14 @@ This is the frontend of StackIt, a minimalist Q&A platform built for collaborati
 
 ## ✨ Features
 
-- 🔍 Search Bar: Filter questions by text
-- 🔔 Notification Bell: Real-time alerts for mentions, answers, and comments
-- 📝 Rich Text Editor: Supports bold, italics, bullet points, emojis, links, image uploads, and alignment
-- 🏷️ Tag Display: Clickable tags for filtering
-- 🔄 Pagination: Navigate between question pages
-- 👤 Auth-Aware Navbar: Conditional rendering based on login state
-- ✅ Vote Count: Upvote answers
-- 📦 Theme Integration: Centralized color and layout system via theme.js
+- 🔍 Search Bar : Filter questions by text
+- 🔔 Notification Bell : Real-time alerts for mentions, answers, and comments
+- 📝 Rich Text Editor : Supports bold, italics, bullet points, emojis, links, image uploads, and alignment
+- 🏷️ Tag Display : Clickable tags for filtering
+- 🔄 Pagination : Navigate between question pages
+- 👤 Auth-Aware Navbar : Conditional rendering based on login state
+- ✅ Vote Count : Upvote answers
+- 📦 Theme Integration : Centralized color and layout system via theme.js
 
 ## 🧪 Environment Setup
 
