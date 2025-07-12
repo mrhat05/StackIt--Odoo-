@@ -2,6 +2,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import Question from '../models/Question.js';
 import Answer from '../models/Answer.js';
 import Notification from '../models/Notification.js';
+import Tag from '../models/Tag.js';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -58,7 +59,20 @@ export async function createQuestionWithImages(req, res) {
     
     // Process images from the rich text content
     const images = await processImagesFromContent(description);
-    
+
+    // Upsert tags into Tag collection
+    if (Array.isArray(tags)) {
+      for (const tagName of tags) {
+        if (tagName && typeof tagName === 'string') {
+          await Tag.findOneAndUpdate(
+            { name: tagName },
+            { name: tagName },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
+        }
+      }
+    }
+
     const question = new Question({
       title,
       description,

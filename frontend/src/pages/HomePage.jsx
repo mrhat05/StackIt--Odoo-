@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import QuestionCard from '../components/QuestionCard';
 import Pagination from '../components/Pagination';
-import { getQuestions } from '@/services/api';
+import { getQuestions, getTags } from '@/services/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 function SkeletonCard() {
   return (
@@ -28,8 +29,10 @@ export default function HomePage() {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('newest');
-  const [tag, setTag] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]); // array of tag names
+  const [tags, setTags] = useState([]);
   const limit = 10;
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -41,7 +44,7 @@ export default function HomePage() {
           limit,
           search: search || undefined,
           sort: filter,
-          tag: tag || undefined,
+          tag: selectedTags.length > 0 ? selectedTags.join(',') : undefined,
         });
         setQuestions(data.questions);
         setTotal(data.total);
@@ -52,7 +55,45 @@ export default function HomePage() {
       }
     };
     fetchQuestions();
-  }, [page, search, filter, tag]);
+  }, [page, search, filter, selectedTags]);
+
+  useEffect(() => {
+    // Fetch tags for the tag filter dropdown
+    async function fetchTags() {
+      try {
+        const tagList = await getTags();
+        setTags(tagList);
+      } catch (err) {
+        // Ignore tag fetch errors for now
+      }
+    }
+    fetchTags();
+  }, []);
+
+  // Handle tag selection (checkbox style)
+  const handleTagToggle = (tagName) => {
+    setSelectedTags((prev) =>
+      prev.includes(tagName)
+        ? prev.filter((t) => t !== tagName)
+        : [...prev, tagName]
+    );
+  };
+
+  // Handle clicking a tag on a question card
+  const handleTagClick = (tagName) => {
+    if (!selectedTags.includes(tagName)) {
+      setSelectedTags((prev) => [...prev, tagName]);
+    }
+    // Optionally scroll to top or focus question list
+  };
+
+  // Remove a tag chip
+  const handleRemoveTag = (tagName) => {
+    setSelectedTags((prev) => prev.filter((t) => t !== tagName));
+  };
+
+  // Clear all tags
+  const handleClearTags = () => setSelectedTags([]);
 
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-10 px-2 md:px-6">
@@ -85,15 +126,54 @@ export default function HomePage() {
           <option value="newest">Newest</option>
           <option value="unanswered">Unanswered</option>
         </select>
-        {/* TODO: Populate with tags from API */}
-        <select
-          className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/90 text-base"
-          value={tag}
-          onChange={e => setTag(e.target.value)}
-        >
-          <option value="">All Tags</option>
-        </select>
+        {/* Modern Popover for tag filter */}
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={`border-2 ${selectedTags.length ? 'border-purple-500' : 'border-purple-300'} bg-white/90 text-base min-w-[140px] flex items-center gap-2`}
+            >
+              {selectedTags.length === 0 ? 'All Tags' : `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''} selected`}
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" sideOffset={8} className="p-0 w-64">
+            <div className="max-h-60 overflow-y-auto p-2">
+              {tags.length === 0 ? (
+                <div className="text-gray-400 text-sm px-2 py-3 text-center">No tags available</div>
+              ) : (
+                tags.map(t => (
+                  <label key={t._id || t.name} className="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-purple-50 rounded">
+                    <input
+                      type="checkbox"
+                      checked={selectedTags.includes(t.name)}
+                      onChange={() => handleTagToggle(t.name)}
+                      className="accent-purple-600"
+                    />
+                    <span className="text-sm">{t.name}</span>
+                  </label>
+                ))
+              )}
+            </div>
+            <div className="flex justify-between items-center border-t border-purple-100 px-3 py-2 bg-white rounded-b-xl">
+              <button type="button" className="text-xs text-purple-600 hover:underline" onClick={() => { handleClearTags(); setPopoverOpen(false); }}>Clear all</button>
+              <button type="button" className="text-xs text-gray-500 hover:underline" onClick={() => setPopoverOpen(false)}>Close</button>
+            </div>
+          </PopoverContent>
+        </Popover>
       </motion.div>
+      {/* Selected tags as chips */}
+      {selectedTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center mb-2">
+          {selectedTags.map(tagName => (
+            <span key={tagName} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+              {tagName}
+              <button type="button" className="ml-1 text-purple-500 hover:text-purple-800" onClick={() => handleRemoveTag(tagName)} aria-label={`Remove ${tagName}`}>&times;</button>
+            </span>
+          ))}
+          <button type="button" className="text-xs text-purple-600 hover:underline ml-2" onClick={handleClearTags}>Clear all</button>
+        </div>
+      )}
       {/* Questions grid/list */}
       <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {loading ? (
@@ -113,7 +193,7 @@ export default function HomePage() {
                 transition={{ duration: 0.35, delay: idx * 0.06, ease: 'easeOut' }}
                 className="h-full"
               >
-                <QuestionCard question={q} />
+                <QuestionCard question={q} onTagClick={handleTagClick} />
               </motion.div>
             ))}
           </AnimatePresence>

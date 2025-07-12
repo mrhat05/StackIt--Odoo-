@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { BellIcon } from '@radix-ui/react-icons';
+import { BellIcon, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/authSlice';
@@ -14,6 +14,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Fetch notifications when dropdown opens and user is logged in
   useEffect(() => {
@@ -49,22 +50,36 @@ export default function Navbar() {
     // eslint-disable-next-line
   }, [open]);
 
+  // Modern nav link style
+  const navLinkClass =
+    'block md:inline px-4 py-2 rounded-full font-semibold text-white/90 hover:text-white bg-white/0 hover:bg-purple-400/30 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-white';
+
+  // Mobile nav links
+  const navLinks = (
+    <>
+      <Link to="/" className={navLinkClass + ' text-base'} onClick={() => setMobileMenuOpen(false)}>Home</Link>
+      <Link to="/my-questions" className={navLinkClass + ' text-base'} onClick={() => setMobileMenuOpen(false)}>My Questions</Link>
+      <Link to="/profile" className={navLinkClass + ' text-base'} onClick={() => setMobileMenuOpen(false)}>Profile</Link>
+    </>
+  );
+
   return (
-    <nav className="w-full flex items-center justify-between px-4 py-2 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-500 text-white shadow-lg">
+    <nav className="w-full flex items-center justify-between px-4 py-2 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-500 text-white shadow-lg relative">
+      {/* Logo */}
       <div className="flex items-center gap-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/src/assets/logo.svg" alt="StackIt Logo" className="w-8 h-8 drop-shadow-lg" />
+          <img src="/src/assets/logo.jpg" alt="StackIt Logo" className="w-10 h-10 drop-shadow-lg" />
           <span className="font-bold text-xl tracking-tight drop-shadow">StackIt</span>
         </Link>
       </div>
-      <div className="flex-1 mx-4 max-w-lg">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full px-3 py-2 rounded-lg bg-white/90 text-primary focus:outline-none focus:ring-2 focus:ring-accent shadow-sm transition-all"
-        />
+      {/* Desktop nav links */}
+      <div className="hidden md:flex items-center gap-2">
+        {navLinks}
       </div>
-      <div className="flex items-center gap-4">
+      {/* Spacer for mobile right icons */}
+      <div className="flex-1 md:hidden" />
+      {/* Notification bell and hamburger (mobile) */}
+      <div className="flex items-center gap-2 md:gap-4">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="ghost" className="relative p-2 rounded-full hover:bg-purple-100/20 transition group focus-visible:ring-2 focus-visible:ring-accent">
@@ -105,22 +120,58 @@ export default function Navbar() {
             </div>
           </PopoverContent>
         </Popover>
+        {/* Hamburger icon on mobile (rightmost) */}
+        <div className="md:hidden flex items-center">
+          <button
+            className="p-2 rounded focus:outline-none focus:ring-2 focus:ring-white"
+            onClick={() => setMobileMenuOpen(v => !v)}
+            aria-label="Open navigation menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </div>
+      {/* User actions (desktop) */}
+      <div className="hidden md:flex items-center gap-2 ml-2">
         {user ? (
-          <div className="flex items-center gap-2">
+          <>
             <span className="font-medium drop-shadow-sm">{user.name}</span>
             <Button variant="secondary" className="rounded-lg shadow hover:scale-105 transition" onClick={handleLogout}>Logout</Button>
-          </div>
+          </>
         ) : (
-          <div className="flex items-center gap-2">
+          <>
             <Link to="/login">
               <Button variant="secondary" className="rounded-lg shadow hover:scale-105 transition">Login</Button>
             </Link>
             <Link to="/signup">
               <Button variant="accent" className="rounded-lg shadow hover:scale-105 transition">Sign Up</Button>
             </Link>
-          </div>
+          </>
         )}
       </div>
+      {/* Mobile menu dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-gradient-to-br from-purple-700 via-purple-600 to-purple-500 shadow-2xl z-50 animate-in slide-in-from-top-2">
+          <div className="flex flex-col gap-3 px-4 py-6">
+            {navLinks}
+            {user ? (
+              <div className="flex flex-col gap-2 mt-2">
+                <span className="font-medium drop-shadow-sm text-white">{user.name}</span>
+                <Button variant="secondary" className="rounded-lg shadow hover:scale-105 transition w-full" onClick={handleLogout}>Logout</Button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2 mt-2">
+                <Link to="/login">
+                  <Button variant="secondary" className="rounded-lg shadow hover:scale-105 transition w-full">Login</Button>
+                </Link>
+                <Link to="/signup">
+                  <Button variant="accent" className="rounded-lg shadow hover:scale-105 transition w-full">Sign Up</Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 } 

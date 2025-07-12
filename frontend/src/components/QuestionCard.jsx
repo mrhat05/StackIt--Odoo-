@@ -17,7 +17,7 @@ function getTextPreview(html, maxLength = 120) {
   return text || 'No preview available.';
 }
 
-export default function QuestionCard({ question }) {
+export default function QuestionCard({ question, onTagClick }) {
   return (
     <Link to={`/question/${question._id}`} className="block group h-full">
       <div className="h-full flex flex-col justify-between rounded-2xl bg-gradient-to-br from-purple-50/80 via-white/90 to-purple-100/80 border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-200 group-hover:ring-2 group-hover:ring-purple-300 cursor-pointer overflow-hidden">
@@ -30,7 +30,24 @@ export default function QuestionCard({ question }) {
           </div>
           <div className="flex flex-wrap gap-2 mb-2">
             {question.tags.map(tag => (
-              <span key={tag} className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium shadow-sm">
+              <span
+                key={tag}
+                className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium shadow-sm hover:bg-purple-200 hover:text-purple-900 cursor-pointer transition"
+                onClick={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (onTagClick) onTagClick(tag);
+                }}
+                tabIndex={0}
+                role="button"
+                onKeyDown={e => {
+                  if ((e.key === 'Enter' || e.key === ' ') && onTagClick) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onTagClick(tag);
+                  }
+                }}
+              >
                 #{tag}
               </span>
             ))}

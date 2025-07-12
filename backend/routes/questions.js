@@ -5,7 +5,12 @@ import { upvoteQuestion } from '../controllers/answerController.js';
 
 const router = express.Router();
 
-router.get('/', getQuestions);
+router.get('/', (req, res, next) => {
+  if (req.query.my) {
+    return auth(req, res, next);
+  }
+  next();
+}, getQuestions);
 router.get('/:id', getQuestionById);
 router.post('/', auth, createQuestion);
 router.post('/upvote/:id', auth, upvoteQuestion);

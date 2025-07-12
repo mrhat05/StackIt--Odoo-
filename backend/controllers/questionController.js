@@ -4,9 +4,20 @@ import { createQuestionWithImages, updateQuestionWithImages, cleanupImages } fro
 
 export async function getQuestions(req, res) {
   try {
-    const { page = 1, limit = 10, tag, search, sort = 'newest', unanswered } = req.query;
+    const { page = 1, limit = 10, tag, search, sort = 'newest', unanswered, my } = req.query;
     const filter = {};
-    if (tag) filter.tags = tag;
+    if (tag) {
+      if (tag.includes(',')) {
+        // Multi-tag: match any tag (OR logic)
+        filter.tags = { $in: tag.split(',').map(t => t.trim()).filter(Boolean) };
+      } else {
+        filter.tags = tag;
+      }
+    }
+    // If 'my' param is set, filter by current user
+    if (my && req.user && req.user.userId) {
+      filter.user = req.user.userId;
+    }
     if (unanswered) filter.answers = { $size: 0 };
     if (search) filter.title = { $regex: search, $options: 'i' };
     const sortOption = sort === 'newest' ? { createdAt: -1 } : { createdAt: 1 };

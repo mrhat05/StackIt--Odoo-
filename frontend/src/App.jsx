@@ -11,6 +11,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useEffect } from 'react';
 import AnswerDetailPage from './pages/AnswerDetailPage';
+import ProfilePage from './pages/ProfilePage';
+import MyQuestionsPage from './pages/MyQuestionsPage';
 
 function AppContent() {
   const location = useLocation();
@@ -34,6 +36,8 @@ function AppContent() {
           <Route path="/ask" element={<AskPage />} />
           <Route path="/question/:id" element={<QuestionDetailPage />} />
           <Route path="/answer/:id" element={<AnswerDetailPage />} />
+          <Route path="/my-questions" element={<MyQuestionsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
         </Routes>
