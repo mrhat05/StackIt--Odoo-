@@ -1,4 +1,4 @@
-# StackIt - A minimal Q&A Forum Platform
+# StackIt - A minimal Q&A Forum Platform.
 
 
 
